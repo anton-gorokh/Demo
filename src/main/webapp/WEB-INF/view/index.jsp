@@ -4,9 +4,10 @@
 <body>
 <h3>Welcome to Anton Gorokh's demo spring boot application</h3>
 
-<p>If you are running at localhost:8080 then you can use links below:</p>
-
-<li><a href="localhost:8080/api/exchange-rates/usd" target="_blank">GET /api/exchange-rates/{currencyCode}</a></li>
-<li><a href="localhost:8080/api/gold-price/average" target="_blank">GET /api/gold-price/average</a></li>
+<p>If you are running at localhost:8080 then you can use links below:
+<br> (can be problems with slow redirections caused by localhost)
+</p>
+<li><a href="localhost:8080/api/exchange-rates/usd" target="_blank">localhost:8080/api/exchange-rates/usd</a></li>
+<li><a href="localhost:8080/api/gold-price/average" target="_blank">localhost:8080/api/gold-price/average</a></li>
 </body>
 </html>
