@@ -1,4 +1,5 @@
 <%@ page import="java.util.List" %>
+<%@ page import="java.time.LocalDate" %>
 
 <%--
   Created by IntelliJ IDEA.
@@ -18,16 +19,17 @@
     <title>PLN to <%= currencyCode%></title>
 </head>
 <body>
-<p>PLN to <%= currencyCode%> exchange rate for last 5 days: </p>
+<p>PLN to <%= currencyCode%> exchange rate for last 5 business days: </p>
 
 <%
-    List<String> rates = (List<String>) request.getAttribute("list");
+    List<LocalDate> dates = (List<LocalDate>) request.getAttribute("dates");
+    List<Double> prices = (List<Double>) request.getAttribute("prices");
 %>
 <%
-    for (int i = 1; i <= rates.size(); i++) {
+    for (int i = 0; i < dates.size(); i++) {
 %>
     <tr>
-        <br><%= String.format("%d: %s", i, rates.get(rates.size() - i))%></br>
+        <br><%= String.format("%s: %f", dates.get(i).toString(), prices.get(i))%></br>
     </tr>
 <%
     }

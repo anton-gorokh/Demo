@@ -1,3 +1,12 @@
+
+<%--
+  Created by IntelliJ IDEA.
+  User: anton-gorokh
+  Date: 03.03.2022
+  Time: 18:52
+  To change this template use File | Settings | File Templates.
+--%>
+
 <html>
 <head>
     <title>Welcome page</title></head>

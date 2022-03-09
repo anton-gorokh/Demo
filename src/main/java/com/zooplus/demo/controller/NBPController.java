@@ -1,5 +1,6 @@
 package com.zooplus.demo.controller;
 
+import com.zooplus.demo.domain.ExchangeRate;
 import com.zooplus.demo.service.NBPService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,18 +25,30 @@ public class NBPController {
 
     @GetMapping("/exchange-rates/{currencyCode}")
     public ModelAndView getPLNtoCurrencyExchangeRate(@PathVariable String currencyCode) {
-        List<Float> plNtoCurrencyExchangeRate = nbpService.getPLNtoCurrencyExchangeRate(currencyCode, 5);
-        List<String> rates = plNtoCurrencyExchangeRate.stream()
-                .map(String::valueOf).collect(Collectors.toList());
+        try {
+            List<ExchangeRate> rates = nbpService.getPlnToCurrencyExchangeRates(currencyCode, 5);
 
-        ModelAndView modelAndView = new ModelAndView("pln-to-cur");
-        modelAndView.addObject("list", rates);
-        return modelAndView;
+            ModelAndView modelAndView = new ModelAndView("plnToCurrency");
+            modelAndView.addObject("dates", rates.stream().map(ExchangeRate::getDate)
+                    .collect(Collectors.toList()));
+            modelAndView.addObject("prices", rates.stream().map(x -> x.getPrice().doubleValue())
+                    .collect(Collectors.toList()));
+            return modelAndView;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ModelAndView("error");
+        }
     }
 
     @GetMapping("/gold-price/average")
-    public String getAvgGoldPrice() {
-        return String.format("Average gold price for the last 14 business days is: %.2f pln",
-                nbpService.getAvgGoldPrice(14));
+    public ModelAndView getAvgGoldPrice() {
+        try {
+            ModelAndView modelAndView = new ModelAndView("avgGoldPrice");
+            modelAndView.addObject("price", nbpService.getAvgGoldPrice(14));
+            return modelAndView;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ModelAndView("error");
+        }
     }
 }

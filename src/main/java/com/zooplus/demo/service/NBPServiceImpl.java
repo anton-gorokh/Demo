@@ -1,58 +1,51 @@
 package com.zooplus.demo.service;
 
+import com.zooplus.demo.domain.ExchangeRate;
 import lombok.NoArgsConstructor;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @NoArgsConstructor
 public class NBPServiceImpl implements NBPService {
-    // You can find methods description in service/NBPService
-
-    /* GET /api/exchange-rates/{currencyCode} - returns currency exchange rate PLN to {currencyCode}
-    for the last 5 business days. */
     @Override
-    public List<Float> getPLNtoCurrencyExchangeRate(String currencyCode, int businessDays) {
-        JSONObject jsonObject;
-        try {
-            jsonObject = Util.getJSONObjectFromReq(
-                    String.format(Util.CURRENCY_TO_PLN_EXCHANGE_RATE_REQ_JSON, currencyCode, businessDays));
-        } catch (IOException e) {
-            return null;
-        }
-        JSONArray rates = jsonObject.getJSONArray("rates");
-        List<Float> result = new ArrayList<>();
-
-        for(int i = 0; i < rates.length(); i++) {
-            // Currency to PLN
-            float plnRate = rates.getJSONObject(i).getFloat("mid");
-            // PLN to Currency
-            float curRate = 1 / plnRate;
-
-            result.add(curRate);
-        }
-        return result;
+    public List<ExchangeRate> getCurrencyToPlnExchangeRates(String currencyCode, int businessDays) throws IOException {
+        return Util.mapJsonCurrencyTableToExchangeRate(
+                Util.getStringFromHttpReq(
+                        String.format(Util.CURRENCY_TO_PLN_EXCHANGE_RATE_REQ_JSON, currencyCode, businessDays)
+                )
+        );
     }
 
-    /* GET /api/gold-price/average - returns average gold price for the last 14 business days */
     @Override
-    public float getAvgGoldPrice(int businessDays) {
-        JSONArray jsonArray;
-        try {
-            jsonArray = Util.getJSONArrayFromReq(String.format(Util.AVG_GOLD_PRICE_REQ_JSON, businessDays));
-        } catch (IOException e) {
-            return -1;
-        }
+    public List<ExchangeRate> getPlnToCurrencyExchangeRates(String currencyCode, int businessDays) throws IOException {
+        List<ExchangeRate> rates = Util.mapJsonCurrencyTableToExchangeRate(
+                Util.getStringFromHttpReq(
+                        String.format(Util.CURRENCY_TO_PLN_EXCHANGE_RATE_REQ_JSON, currencyCode, businessDays)
+                )
+        );
 
-        float sum = 0;
-        for(int i = 0; i < jsonArray.length(); i++) {
-            sum += jsonArray.getJSONObject(i).getFloat("cena");
-        }
-        float avg = sum / jsonArray.length();
-        return avg;
+        // Flips currencies by dividing 1 by rate
+        rates.forEach(x -> {
+            x.setPrice(BigDecimal.valueOf(1 / x.getPrice().doubleValue()));
+        });
+        return rates;
+    }
+
+    @Override
+    public double getAvgGoldPrice(int businessDays) throws IOException {
+        List<ExchangeRate> rates = Util.mapJsonArrayToExchangeRate(
+                Util.getStringFromHttpReq(
+                        String.format(Util.AVG_GOLD_PRICE_REQ_JSON, businessDays)
+                )
+        );
+
+        return rates.stream().filter(Objects::nonNull)
+                .mapToDouble(x -> x.getPrice()
+                        .doubleValue()).average().getAsDouble();
     }
 }
